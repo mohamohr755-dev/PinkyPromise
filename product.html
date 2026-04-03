@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | Pinky Promise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* ستايل تقسيم صفحة المنتج من جوه */
+        .product-page-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; padding: 60px 5%; max-width: 1200px; margin: auto; }
+        .product-details { padding-top: 20px; }
+        .p-brand { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: block; }
+        .p-title { font-size: 32px; font-weight: 900; color: var(--primary-color); margin-bottom: 20px; line-height: 1.2; }
+        .p-price { font-size: 24px; font-weight: bold; color: var(--primary-color); margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .p-price .old-price { text-decoration: line-through; color: #aaa; font-size: 18px; margin-right: 15px; }
+        
+        /* أزرار التحكم والكمية */
+        .action-row { display: flex; gap: 15px; margin-bottom: 30px; align-items: center; }
+        .qty-box { display: flex; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; height: 50px; width: 120px;}
+        .qty-btn { background: #f9f9f9; border: none; width: 40px; font-size: 18px; cursor: pointer; transition: 0.3s; }
+        .qty-btn:hover { background: #eee; }
+        .qty-input { width: 40px; text-align: center; border: none; font-size: 16px; font-weight: bold; outline: none; }
+        
+        .add-btn { flex: 1; background: var(--primary-color); color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; height: 50px;}
+        .add-btn:hover { background: var(--accent-color); color: #000; }
+        
+        .wishlist-large-btn { width: 50px; height: 50px; background: #fff; border: 1px solid #ccc; border-radius: 6px; font-size: 20px; color: #ccc; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;}
+        .wishlist-large-btn:hover, .wishlist-large-btn.active { color: #ff4757; border-color: #ff4757; }
+        
+        .p-description { line-height: 1.8; color: #555; font-size: 15px; margin-top: 30px; }
+        @media (max-width: 768px) { .product-page-container { grid-template-columns: 1fr; gap: 30px; } }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-nav" class="mobile-nav">
+        <div class="mobile-nav-header">
+            <div class="logo">Pinky Promise</div>
+            <i class="fas fa-times" style="font-size: 24px; cursor: pointer;" onclick="toggleMobileMenu()"></i>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" data-i18n="home">Home</a></li>
+            <li><a href="shop.html" data-i18n="shop">Shop</a></li>
+            <li><a href="account.html" data-i18n="account">Account</a></li>
+        </ul>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></div>
+            <div class="logo">Pinky Promise</div>
+        </div>
+        <div class="nav-center">
+            <ul class="nav-links">
+                <li><a href="index.html" data-i18n="home">Home</a></li>
+                <li><a href="shop.html" data-i18n="shop">Shop</a></li>
+                <li><a href="account.html" data-i18n="account">Account</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <button id="lang-switch-btn" class="lang-btn" onclick="toggleLang()">عربي</button>
+            <div class="search-icon" onclick="openSearch()"><i class="fas fa-search"></i></div>
+            <div class="cart-icon" onclick="openCart()">
+                <i class="fas fa-shopping-bag"></i><span id="cart-count">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <div id="search-overlay" class="search-overlay">
+        <span class="close-search" onclick="closeSearch()"><i class="fas fa-times"></i></span>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="live-search-input" placeholder="Search for products, brands..." data-i18n-placeholder="searchPlaceholder" oninput="performSearch()">
+        </div>
+        <div id="search-results" class="search-results"></div>
+    </div>
+
+    <div id="single-product-container">
+        </div>
+
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header">
+            <h3 data-i18n="cartTitle">Shopping Cart</h3>
+            <span class="close-cart" onclick="closeCart()"><i class="fas fa-times"></i></span>
+        </div>
+        <div class="shipping-progress">
+            <p><span id="amount-left-text">Add <span id="amount-left" style="color: red; font-weight: bold;">2000 EGP</span> for Free Shipping!</span></p>
+            <div class="progress-bar"><div class="progress-fill" id="shipping-fill"></div></div>
+        </div>
+        <div class="cart-items" id="cart-items-container"></div>
+        <div class="cart-footer">
+            <div class="cart-total"><span data-i18n="total">Total:</span><span id="cart-total-price">0 EGP</span></div>
+            <button class="checkout-btn" onclick="goToCheckout()" data-i18n="checkoutBtn">Checkout</button>
+        </div>
+    </div>
+    <div id="cart-overlay" class="cart-overlay" onclick="closeCart()"></div>
+
+    <div class="similar-products-section" style="max-width: 1200px; margin: 60px auto 20px auto; padding: 0 5%;">
+        <h2 style="font-size: 24px; color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">منتجات قد تعجبك</h2>
+        <div id="similar-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;"></div>
+    </div>
+
+    <div class="reviews-section" style="max-width: 1200px; margin: 20px auto 60px auto; padding: 0 5%;">
+        <h2 style="font-size: 24px; color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">آراء وتقييمات العملاء</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr; gap: 40px;">
+            <div id="reviews-container" style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                </div>
+
+            <div class="add-review-box" style="background: #f9f9f9; padding: 30px; border-radius: 12px; border: 1px solid #eee;">
+                <h3 style="margin-bottom: 20px; color: #333;">أضف تقييمك للمنتج</h3>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">تقييمك (من 5 نجوم):</label>
+                    <select id="review-stars" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 16px;">
+                        <option value="5">⭐⭐⭐⭐⭐ (ممتاز جداً)</option>
+                        <option value="4">⭐⭐⭐⭐ (جيد جداً)</option>
+                        <option value="3">⭐⭐⭐ (جيد)</option>
+                        <option value="2">⭐⭐ (مقبول)</option>
+                        <option value="1">⭐ (سيء)</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">رأيك بصراحة:</label>
+                    <textarea id="review-text" rows="4" placeholder="شاركنا تجربتك مع المنتج..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; outline: none; font-family: inherit; font-size: 15px;"></textarea>
+                </div>
+                <button onclick="submitReview()" style="background: var(--primary-color); color: #fff; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#d43f7a'" onmouseout="this.style.background='var(--primary-color)'">نشر التقييم</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h2>Pinky Promise</h2>
+                <p data-i18n="footerDesc">Join our newsletter to get the latest beauty updates, exclusive offers, and a 5% discount on your first order!</p>
+            </div>
+            <div class="footer-links">
+                <h3 data-i18n="quickLinks">Quick Links</h3>
+                <ul>
+                    <li><a href="shop.html" data-i18n="shopAll">Shop All</a></li>
+                    <li><a href="account.html" data-i18n="myAccount">My Account</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/lang.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/product.js"></script>
+    <script src="js/store_logic.js"></script>
+</body>
+</html>

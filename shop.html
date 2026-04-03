@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop All | Pinky Promise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .shop-page-header { background: #fcfcfc; padding: 50px 20px; text-align: center; margin-bottom: 40px; border-bottom: 1px solid #eee; }
+        .shop-page-header h1 { font-size: 36px; color: #111; font-weight: 900; }
+        .store-container { max-width: 1200px; margin: 0 auto; padding: 0 5%; min-height: 50vh; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="nav-left" style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo" onclick="window.location.href='index.html'" style="font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #111; cursor: pointer;">PINKY PROMISE</div>
+        </div>
+        <div class="nav-center">
+            <ul class="nav-links" style="display: flex; gap: 25px; list-style: none; margin: 0; padding: 0;">
+                <li><a href="index.html" style="text-decoration: none; color: #111; font-weight: 800; font-size: 14px;" data-i18n="home">HOME</a></li>
+                <li><a href="shop.html" style="text-decoration: none; color: var(--primary-color); font-weight: 800; font-size: 14px;" data-i18n="shop">SHOP</a></li>
+            </ul>
+        </div>
+        <div class="nav-right" style="display: flex; align-items: center; gap: 22px;">
+            <i class="fas fa-globe" onclick="toggleLang()" style="font-size: 20px; cursor: pointer; color: #333;"></i>
+            <i class="fas fa-search" onclick="openSearch()" style="font-size: 20px; cursor: pointer; color: #333;"></i>
+            <i class="fas fa-user" onclick="handleUserIconClick()" style="font-size: 20px; cursor: pointer; color: #333;"></i>
+            <i class="fas fa-heart" onclick="window.location.href='wishlist.html'" style="font-size: 20px; cursor: pointer; color: #333;"></i>
+            <div class="cart-icon-wrapper" onclick="openCart()" style="position: relative; cursor: pointer; display: flex; align-items: center;">
+                <i class="fas fa-shopping-bag" style="font-size: 20px; color: #333;"></i>
+                <span id="cart-count" style="position: absolute; top: -6px; right: -8px; background: #f15a97; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <div id="search-overlay" class="search-overlay">
+        <span class="close-search" onclick="closeSearch()"><i class="fas fa-times"></i></span>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="live-search-input" placeholder="Search for products, brands..." data-i18n-placeholder="searchPlaceholder" oninput="performSearch()">
+        </div>
+        <div id="search-results" class="search-results"></div>
+    </div>
+
+    <div class="shop-page-header">
+        <h1 data-i18n="shopAll">Shop All</h1>
+    </div>
+
+    <div class="store-container">
+        <div class="filter-bar" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; background: #fafafa; padding: 20px; border-radius: 10px; border: 1px solid #eee;">
+            <div class="filter-group" style="flex: 1; min-width: 250px; position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa;"></i>
+                <input type="text" id="shop-page-search" class="filter-select" style="width: 100%; padding: 12px 15px 12px 40px; border: 1px solid #ddd; border-radius: 8px; outline: none;" placeholder="Search in shop..." data-i18n-placeholder="searchPlaceholder" oninput="applyFilters()">
+            </div>
+
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div class="filter-group" style="display: flex; align-items: center; gap: 10px;">
+                    <label data-i18n="filterBrand" style="font-weight: bold; color: #555;">Brand:</label>
+                    <select id="brand-filter" class="filter-select" onchange="applyFilters()" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none;">
+                        <option value="all" data-i18n="allBrands">All Brands</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group" style="display: flex; align-items: center; gap: 10px;">
+                    <label data-i18n="sortBy" style="font-weight: bold; color: #555;">Sort By:</label>
+                    <select id="price-sort" class="filter-select" onchange="applyFilters()" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none;">
+                        <option value="default" data-i18n="defaultSort">Default</option>
+                        <option value="low" data-i18n="priceLow">Price: Low to High</option>
+                        <option value="high" data-i18n="priceHigh">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+            
+        <div id="results-count" style="margin-bottom: 20px; font-weight: bold; color: #888;">Loading...</div>
+        
+        <main id="shop-grid-container" class="shop-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 30px;"></main>
+    </div>
+
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header"><h3 data-i18n="cartTitle">Shopping Cart</h3><span class="close-cart" onclick="closeCart()"><i class="fas fa-times"></i></span></div>
+        <div class="shipping-progress"><p><span id="amount-left-text">Add <span id="amount-left" style="color: red; font-weight: bold;">2000 EGP</span> for Free Shipping!</span></p><div class="progress-bar"><div class="progress-fill" id="shipping-fill"></div></div></div>
+        <div class="cart-items" id="cart-items-container"></div>
+        <div class="cart-footer"><div class="cart-total"><span data-i18n="total">Total:</span><span id="cart-total-price">0 EGP</span></div><button class="checkout-btn" onclick="goToCheckout()" data-i18n="checkoutBtn">Checkout</button></div>
+    </div>
+    <div id="cart-overlay" class="cart-overlay" onclick="closeCart()"></div>
+
+    <footer class="site-footer">
+        <div class="footer-top" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px;">
+            <div class="footer-brand" style="max-width: 300px;">
+                <h2>Pinky Promise</h2>
+                <p data-i18n="footerDesc">Join our newsletter to get the latest beauty updates!</p>
+            </div>
+            <div class="footer-links">
+                <h3 data-i18n="quickLinks">Quick Links</h3>
+                <ul>
+                    <li><a href="shop.html" data-i18n="shopAll">Shop All</a></li>
+                    <li><a href="account.html" data-i18n="myAccount">My Account</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3 data-i18n="customerCare">Customer Care</h3>
+                <ul>
+                    <li><a href="contact.html" data-i18n="contactUs">Contact Us</a></li>
+                    <li><a href="shipping.html" data-i18n="shippingInfo">Shipping Info</a></li>
+                    <li><a href="policy.html" data-i18n="refundPolicy">Refund Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Pinky Promise Cosmetics. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/lang.js"></script>
+    
+    <script src="js/shop.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Pinky Promise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .static-header { text-align: center; padding: 60px 20px; background: #fcfcfc; border-bottom: 1px solid #eee; }
+        .static-header h1 { font-size: 36px; color: #111; margin-bottom: 10px; font-weight: 900; }
+        .contact-container { max-width: 1000px; margin: 60px auto; padding: 0 5%; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+        .contact-info h3 { font-size: 22px; color: #111; margin-bottom: 20px; }
+        .info-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 25px; }
+        .info-item i { font-size: 24px; color: var(--primary-color); margin-top: 5px; }
+        .info-item h4 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
+        .info-item p { margin: 0; color: #666; line-height: 1.6; }
+        .contact-form { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; font-family: inherit; background: #fafafa; box-sizing: border-box; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); background: #fff; }
+        .submit-btn { width: 100%; padding: 15px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .submit-btn:hover { background: var(--primary-color); }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+        @media (max-width: 768px) { .contact-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="nav-left" style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo" onclick="window.location.href='index.html'" style="font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #111; cursor: pointer;">PINKY PROMISE</div>
+        </div>
+        <div class="nav-center">
+            <ul class="nav-links" style="display: flex; gap: 25px; list-style: none; margin: 0; padding: 0;">
+                <li><a href="index.html" style="text-decoration: none; color: #111; font-weight: 800; font-size: 14px;" data-i18n="home">HOME</a></li>
+                <li><a href="shop.html" style="text-decoration: none; color: #111; font-weight: 800; font-size: 14px;" data-i18n="shop">SHOP</a></li>
+            </ul>
+        </div>
+        <div class="nav-right" style="display: flex; align-items: center; gap: 22px;">
+            <i class="fas fa-globe" onclick="toggleLang()" style="font-size: 20px; cursor: pointer; color: #333;"></i>
+            <i class="fas fa-user" onclick="window.location.href='account.html'" style="font-size: 20px; cursor: pointer; color: #333;"></i>
+        </div>
+    </nav>
+
+    <div class="static-header">
+        <h1 data-i18n="contactUs">Contact Us</h1>
+        <p>We'd love to hear from you. Our team is always here to help.</p>
+    </div>
+
+    <div class="contact-container">
+        <div class="contact-info">
+            <h3>Get in Touch</h3>
+            <div class="info-item">
+                <i class="fab fa-whatsapp"></i>
+                <div>
+                    <h4>WhatsApp / Phone</h4>
+                    <p>+20 100 000 0000<br>Sat - Thu (10 AM - 10 PM)</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="far fa-envelope"></i>
+                <div>
+                    <h4>Email Support</h4>
+                    <p>support@pinkypromise.com<br>We reply within 24 hours.</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <h4>Location</h4>
+                    <p>Cairo, Egypt (Online Store Only)</p>
+                </div>
+            </div>
+        </div>
+
+        <form class="contact-form" id="contact-form" onsubmit="sendContactMessage(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="contact-name" placeholder="e.g. Sarah Smith" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="contact-email" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>Phone (optional)</label>
+                <input type="tel" id="contact-phone" placeholder="+20 100 000 0000">
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea rows="4" id="contact-message" placeholder="How can we help you?" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn" id="contact-submit-btn">Send Message <i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+
+    <script src="js/lang.js"></script>
+    <script>
+        // FIX: فورم حقيقي بيبعت رسالة على تيليجرام
+        const TELEGRAM_BOT_TOKEN = '8253875902:AAEtzwIMnENEDANTHNxIFS8fRNWCcyYXG5A';
+        const TELEGRAM_CHAT_ID   = '8144239449';
+
+        async function sendContactMessage(e) {
+            e.preventDefault();
+            const btn = document.getElementById('contact-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            const name    = document.getElementById('contact-name').value.trim();
+            const email   = document.getElementById('contact-email').value.trim();
+            const phone   = document.getElementById('contact-phone').value.trim();
+            const message = document.getElementById('contact-message').value.trim();
+
+            const text = `
+📩 *رسالة جديدة من صفحة التواصل!*
+---------------------------------
+👤 *الاسم:* ${name}
+📧 *البريد:* ${email}
+📞 *الموبايل:* ${phone || 'لم يذكر'}
+💬 *الرسالة:*
+${message}
+            `;
+
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'Markdown' })
+                });
+
+                if (res.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Message Sent! ✅',
+                        text: 'We will get back to you within 24 hours.',
+                        confirmButtonColor: '#000'
+                    });
+                    document.getElementById('contact-form').reset();
+                } else {
+                    throw new Error('Failed');
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Oops!', text: 'Could not send message. Please try WhatsApp instead.' });
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = 'Send Message <i class="fas fa-paper-plane"></i>';
+        }
+    </script>
+    <script src="js/store_logic.js"></script>
+</body>
+</html>

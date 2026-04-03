@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Pinky Promise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #fcfcfc; }
+        .profile-page { display: flex; gap: 30px; padding: 40px 5%; max-width: 1200px; margin: auto; min-height: 70vh; }
+        
+        /* القائمة الجانبية */
+        .profile-sidebar { width: 280px; background: #fff; padding: 20px; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); align-self: start; text-align: center; }
+        .profile-avatar { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .avatar-circle { width: 70px; height: 70px; background: var(--primary-color); color: #fff; font-size: 28px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 10px auto; }
+        .profile-avatar h3 { font-size: 18px; margin: 0; color: #222; }
+        
+        .profile-nav { list-style: none; padding: 0; margin: 0; }
+        .profile-nav li { margin-bottom: 8px; }
+        .profile-nav button { width: 100%; text-align: left; padding: 12px 15px; border: none; background: transparent; font-size: 15px; font-weight: bold; color: #555; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        html[dir="rtl"] .profile-nav button { text-align: right; }
+        .profile-nav button:hover, .profile-nav button.active { background: #fff0f5; color: var(--primary-color); }
+        .profile-nav button.logout-btn { color: #d32f2f; margin-top: 15px; background: #fafafa; border: 1px solid #eee;}
+        .profile-nav button.logout-btn:hover { background: #d32f2f; color: #fff; border-color: #d32f2f; }
+
+        /* المحتوى */
+        .profile-content { flex: 1; background: #fff; padding: 30px; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .tab-section { display: none; animation: fadeIn 0.4s ease; }
+        .tab-section.active { display: block; }
+        .tab-title { font-size: 22px; margin-bottom: 25px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; display: inline-block; color: #111; }
+
+        /* كروت الطلبات */
+        .order-card { border: 1px solid #eee; padding: 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .order-status { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; background: #eee; }
+        .status-new { background: #fff0f5; color: var(--primary-color); }
+
+        /* شبكة نوع البشرة */
+        .skin-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .skin-card { border: 2px solid #eee; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; background: #fff; }
+        .skin-card:hover { border-color: var(--primary-color); }
+        .skin-card.selected { border-color: var(--primary-color); background: #fff0f5; }
+        .skin-card i { font-size: 28px; color: var(--primary-color); margin-bottom: 10px; }
+        .save-btn { padding: 12px 25px; background: #111; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .save-btn:hover { background: var(--primary-color); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .profile-page { flex-direction: column; } .profile-sidebar { width: 100%; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="nav-left" style="display: flex; align-items: center; gap: 15px;">
+            <div class="menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></div>
+            <div class="logo" onclick="window.location.href='index.html'" style="font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #111; cursor: pointer;">
+                PINKY PROMISE
+            </div>
+        </div>
+        <div class="nav-center">
+            <ul class="nav-links" style="display: flex; gap: 25px; list-style: none; margin: 0; padding: 0;">
+                <li><a href="index.html" style="text-decoration: none; color: #111; font-weight: 800; font-size: 14px;" data-i18n="home">HOME</a></li>
+                <li><a href="shop.html" style="text-decoration: none; color: #111; font-weight: 800; font-size: 14px;" data-i18n="shop">SHOP</a></li>
+            </ul>
+        </div>
+        <div class="nav-right" style="display: flex; align-items: center; gap: 22px;">
+            <i class="fas fa-globe" onclick="toggleLang()" style="font-size: 20px; cursor: pointer; color: #333; transition: 0.3s;"></i>
+            <i class="fas fa-search" onclick="openSearch()" style="font-size: 20px; cursor: pointer; color: #333; transition: 0.3s;"></i>
+            <i class="fas fa-user" style="font-size: 20px; cursor: pointer; color: var(--primary-color);"></i>
+            <div class="cart-icon-wrapper" onclick="openCart()" style="position: relative; cursor: pointer; display: flex; align-items: center;">
+                <i class="fas fa-shopping-bag" style="font-size: 20px; color: #333; transition: 0.3s;"></i>
+                <span id="cart-count" style="position: absolute; top: -6px; right: -8px; background: #f15a97; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-page">
+        <aside class="profile-sidebar">
+            <div class="profile-avatar">
+                <div class="avatar-circle" id="user-initial">👤</div>
+                <h3 id="user-display-name" data-i18n="loading">Loading...</h3>
+                <p id="user-display-email" style="font-size: 12px; color: #888; margin-top: 5px;">...</p>
+            </div>
+            <ul class="profile-nav">
+                <li><button class="active" onclick="switchTab('details', this)"><i class="far fa-user"></i> <span data-i18n="myInfo">Account Details</span></button></li>
+                <li><button onclick="switchTab('skin', this)"><i class="fas fa-magic"></i> <span data-i18n="skinProfile">Skin Profile</span></button></li>
+                <li><button onclick="switchTab('wishlist', this)"><i class="far fa-heart"></i> <span data-i18n="myWishlist">Wishlist</span></button></li>
+                <li><button onclick="switchTab('orders', this)"><i class="fas fa-box-open"></i> <span data-i18n="myOrders">Orders</span></button></li>
+                <li><button class="logout-btn" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span></button></li>
+            </ul>
+        </aside>
+
+        <main class="profile-content">
+            
+            <div id="details" class="tab-section active">
+                <h2 class="tab-title" data-i18n="myInfo">Account Details</h2>
+                <div style="font-size: 16px; line-height: 2.5; color: #444;">
+                    <p><strong>Full Name:</strong> <span id="info-name">-</span></p>
+                    <p><strong>Phone Number:</strong> <span id="info-phone">-</span></p>
+                    <p><strong>Email Address:</strong> <span id="info-email">-</span></p>
+                </div>
+            </div>
+
+            <div id="skin" class="tab-section">
+                <h2 class="tab-title" data-i18n="skinProfile">Skin Profile</h2>
+                <p style="color: #666; margin-bottom: 25px;">Select your skin type for personalized recommendations.</p>
+                <div class="skin-type-grid">
+                    <div class="skin-card" data-type="Oily" onclick="selectSkinType(this)"><i class="fas fa-tint-slash"></i><h4>Oily</h4></div>
+                    <div class="skin-card" data-type="Dry" onclick="selectSkinType(this)"><i class="fab fa-pagelines"></i><h4>Dry</h4></div>
+                    <div class="skin-card" data-type="Combination" onclick="selectSkinType(this)"><i class="fas fa-adjust"></i><h4>Combination</h4></div>
+                    <div class="skin-card" data-type="Normal" onclick="selectSkinType(this)"><i class="fas fa-smile"></i><h4>Normal</h4></div>
+                    <div class="skin-card" data-type="Sensitive" onclick="selectSkinType(this)"><i class="fas fa-feather-alt"></i><h4>Sensitive</h4></div>
+                </div>
+                <button class="save-btn" onclick="saveSkinProfile()">Save Changes</button>
+            </div>
+
+            <div id="wishlist" class="tab-section">
+                <h2 class="tab-title" data-i18n="myWishlist">My Wishlist ❤️</h2>
+                <div class="product-grid" id="wishlist-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;"></div>
+            </div>
+
+            <div id="orders" class="tab-section">
+                <h2 class="tab-title" data-i18n="myOrders">Order History 📦</h2>
+                <div id="orders-list"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header"><h3 data-i18n="cartTitle">Shopping Cart</h3><span class="close-cart" onclick="closeCart()"><i class="fas fa-times"></i></span></div>
+        <div class="shipping-progress"><p><span id="amount-left-text">Add <span id="amount-left">2000 EGP</span> for Free Shipping!</span></p><div class="progress-bar"><div class="progress-fill" id="shipping-fill"></div></div></div>
+        <div class="cart-items" id="cart-items-container"></div>
+        <div class="cart-footer"><div class="cart-total"><span data-i18n="total">Total:</span><span id="cart-total-price">0 EGP</span></div><button class="checkout-btn" onclick="goToCheckout()" data-i18n="checkoutBtn">Checkout</button></div>
+    </div>
+    <div id="cart-overlay" class="cart-overlay" onclick="closeCart()"></div>
+
+    <script src="js/lang.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/store.js"></script>
+</body>
+</html>

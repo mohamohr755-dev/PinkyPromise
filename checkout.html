@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الطلب | Pinky Promise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .checkout-container { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; padding: 40px 5%; max-width: 1200px; margin: auto; }
+        .checkout-section { background: #fff; padding: 30px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .checkout-title { font-size: 22px; margin-bottom: 25px; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; display: inline-block;}
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; outline: none; font-family: 'Cairo'; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); }
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; }
+        .summary-total { display: flex; justify-content: space-between; font-size: 20px; font-weight: 900; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+        .coupon-box { display: flex; gap: 10px; margin-top: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;}
+        .coupon-box input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; outline: none; text-transform: uppercase;}
+        .apply-btn { background: var(--primary-color); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .place-order-btn { width: 100%; background: var(--primary-color); color: #fff; padding: 18px; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px;}
+        .place-order-btn:hover { background: var(--accent-color); color: #000; }
+        
+        /* ستايل طرق الدفع الجديدة */
+        .payment-methods { display: flex; flex-direction: column; gap: 15px; }
+        .payment-option { display: flex; align-items: center; padding: 15px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .payment-option:hover { border-color: var(--primary-color); background: #f9f9f9; }
+        .payment-option input { margin-left: 15px; width: 18px; height: 18px; accent-color: var(--primary-color); cursor: pointer; }
+        .payment-option span { font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 10px; width: 100%; }
+        .payment-icons { margin-right: auto; color: #555; font-size: 20px; }
+        
+        #card-details { display: none; margin-top: 15px; padding: 20px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+        
+        @media (max-width: 768px) { .checkout-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body style="background-color: #fcfcfc;">
+
+    <nav class="navbar">
+        <div class="logo">Pinky Promise</div>
+        <a href="index.html" style="color: var(--primary-color); text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-right"></i> العودة للمتجر</a>
+    </nav>
+
+    <div class="checkout-container">
+        <div>
+            <div class="checkout-section">
+                <h2 class="checkout-title">تفاصيل الشحن والتوصيل</h2>
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label>الاسم بالكامل *</label>
+                        <input type="text" id="c-name" required placeholder="الاسم ثلاثي">
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الهاتف (للتواصل مع المندوب) *</label>
+                        <input type="tel" id="c-phone" required placeholder="01xxxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>العنوان بالتفصيل *</label>
+                        <textarea id="c-address" rows="3" required placeholder="المحافظة، المنطقة، الشارع، رقم العمارة والشقة"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات إضافية (اختياري)</label>
+                        <textarea id="c-notes" rows="2" placeholder="أقرب علامة مميزة، أو مواعيد التوصيل المفضلة..."></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="checkout-section">
+                <h2 class="checkout-title">طريقة الدفع</h2>
+                <div class="payment-methods">
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="Cash" checked onchange="toggleCardDetails()">
+                        <span><i class="fas fa-money-bill-wave" style="color: #2EA043;"></i> الدفع عند الاستلام (كاش)</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="Wallet" onchange="toggleCardDetails()">
+                        <span>
+                            <i class="fas fa-mobile-alt" style="color: #e60000;"></i> محفظة إلكترونية
+                            <div class="payment-icons"><i class="fas fa-wallet"></i></div>
+                        </span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="Card" onchange="toggleCardDetails()">
+                        <span>
+                            <i class="fas fa-credit-card" style="color: #1a1f36;"></i> بطاقة ائتمانية
+                            <div class="payment-icons"><i class="fab fa-cc-visa"></i> <i class="fab fa-cc-mastercard"></i></div>
+                        </span>
+                    </label>
+                </div>
+
+                <div id="card-details">
+                    <p style="font-size:12px; color:#888; margin-bottom:15px;"><i class="fas fa-lock"></i> هذه واجهة تجريبية مؤمنة، سيتم تفعيل الدفع الفعلي لاحقاً.</p>
+                    <input type="text" placeholder="رقم البطاقة" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px; outline:none;">
+                    <div style="display:flex; gap:15px;">
+                        <input type="text" placeholder="MM/YY" style="width:50%; padding:12px; border:1px solid #ccc; border-radius:6px; outline:none;">
+                        <input type="text" placeholder="CVC" style="width:50%; padding:12px; border:1px solid #ccc; border-radius:6px; outline:none;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkout-section" style="height: fit-content;">
+            <h2 class="checkout-title">ملخص الطلب</h2>
+            <div id="checkout-items"></div>
+
+            <div class="coupon-box">
+                <input type="text" id="coupon-code" placeholder="أدخل كود الخصم (إن وجد)">
+                <button class="apply-btn" onclick="applyCoupon()">تطبيق</button>
+            </div>
+
+            <div class="summary-item"><span>المجموع الفرعي:</span><span id="subtotal">0 EGP</span></div>
+            <div class="summary-item" id="discount-row" style="display: none; color: #2EA043; font-weight: bold;">
+                <span>الخصم (<span id="discount-percent">0</span>%):</span><span id="discount-amount">- 0 EGP</span>
+            </div>
+            <div class="summary-item"><span>مصاريف الشحن:</span><span id="shipping-fee">يتم تحديدها مع المندوب</span></div>
+
+            <div class="summary-total"><span>الإجمالي المطلوب:</span><span id="final-total">0 EGP</span></div>
+
+            <button class="place-order-btn" onclick="placeOrder()">تأكيد الطلب 🚀</button>
+        </div>
+    </div>
+
+    <script src="js/checkout.js"></script>
+    <script src="js/store_logic.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | Pinky Promise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #fcfcfc; }
+        
+        /* تنسيق صندوق التأكيد */
+        .confirmation-container {
+            max-width: 600px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 50px 30px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        
+        /* أنيميشن علامة الصح */
+        .success-icon {
+            width: 90px;
+            height: 90px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            margin: 0 auto 25px;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform: scale(0);
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .confirmation-container h1 { font-size: 32px; color: #111; margin-bottom: 15px; font-weight: 900; }
+        .confirmation-container p { color: #666; font-size: 16px; margin-bottom: 30px; line-height: 1.6; }
+        
+        /* رقم الأوردر */
+        .order-number {
+            background: #fff0f5;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--primary-color);
+            border: 2px dashed #f15a97;
+            display: inline-block;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        /* الزراير */
+        .action-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary { padding: 14px 30px; background: #111; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.3s; font-size: 15px; }
+        .btn-primary:hover { background: var(--primary-color); }
+        .btn-secondary { padding: 14px 30px; background: #fff; color: #111; text-decoration: none; border: 2px solid #111; border-radius: 8px; font-weight: bold; transition: 0.3s; font-size: 15px; }
+        .btn-secondary:hover { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" style="display: flex; justify-content: center; align-items: center; padding: 20px 5%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="logo" onclick="window.location.href='index.html'" style="font-size: 28px; font-weight: 900; letter-spacing: 1px; color: #111; cursor: pointer;">
+            PINKY PROMISE
+        </div>
+        <button id="lang-switch-btn" onclick="toggleLang()" style="position: absolute; right: 5%; background: transparent; border: none; font-weight: bold; cursor: pointer; font-size: 16px;">
+            <i class="fas fa-globe"></i> عربي
+        </button>
+    </nav>
+
+    <div class="confirmation-container">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h1 data-i18n="orderConfirmedTitle">Order Confirmed!</h1>
+        <p data-i18n="orderConfirmedDesc">Thank you for your purchase. We've received your order and it's currently being processed.</p>
+        
+        <div>
+            <span style="color: #888; font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px;" data-i18n="orderNumberText">Order Number</span>
+            <div class="order-number" id="display-order-id">GLW-XXXXXX</div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="shop.html" class="btn-primary" data-i18n="continueShopping">Continue Shopping</a>
+            <a href="profile.html" class="btn-secondary" data-i18n="viewOrders">View My Orders</a>
+        </div>
+    </div>
+
+    <script src="js/lang.js"></script>
+    <script>
+        // سحب رقم الأوردر من الرابط (لو موجود) أو توليد رقم عشوائي للشكل
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order_id');
+            if (orderId) {
+                document.getElementById('display-order-id').innerText = `GLW-${orderId.substring(0, 6).toUpperCase()}`;
+            } else {
+                // لو مفيش رقم في الرابط، نعمل رقم عشوائي
+                const randomNum = Math.floor(100000 + Math.random() * 900000);
+                document.getElementById('display-order-id').innerText = `GLW-${randomNum}`;
+            }
+        });
+    </script>
+</body>
+</html>
